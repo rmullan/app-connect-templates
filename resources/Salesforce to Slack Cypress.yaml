@@ -34,7 +34,7 @@ integration:
                   - channel:
                       template: C27RC383C
                   - text:
-                      template: 'cypress test message {{$toMillis("_")}}'
+                      template: 'cypress test message'
                 $map: 'http://ibm.com/appconnect/map/v1'
                 input:
                   - variable: Trigger
