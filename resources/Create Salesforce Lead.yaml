@@ -1,0 +1,80 @@
+$integration: 'http://ibm.com/appconnect/integration/v2/integrationFile'
+integration:
+  type: api
+  trigger-interfaces:
+    trigger-interface-1:
+      triggers:
+        createNewSalesForceLead:
+          assembly:
+            $ref: '#/integration/assemblies/assembly-1'
+          input-context:
+            data: newSalesForceLead
+          output-context:
+            data: newSalesForceLead
+      options:
+        resources:
+          - business-object: newSalesForceLead
+            model:
+              $ref: '#/models/newSalesForceLead'
+            triggers:
+              create: createNewSalesForceLead
+      type: api-trigger
+  action-interfaces:
+    action-interface-1:
+      type: api-action
+      business-object: Lead
+      connector-type: salesforce
+      account-name: Account 1
+      actions:
+        CREATE: {}
+  assemblies:
+    assembly-1:
+      assembly:
+        execute:
+          - create-action:
+              name: Salesforce Create lead
+              target:
+                $ref: '#/integration/action-interfaces/action-interface-1'
+              map:
+                mappings:
+                  - Company:
+                      template: Test
+                  - LastName:
+                      template: Cypress
+                $map: 'http://ibm.com/appconnect/map/v1'
+                input:
+                  - variable: Request
+                    $ref: '#/trigger/payload'
+          - response:
+              name: response-1
+              reply-maps:
+                - title: newSalesForceLead successfully created
+                  status-code: '201'
+                  map:
+                    $map: 'http://ibm.com/appconnect/map/v1'
+                    input:
+                      - variable: Request
+                        $ref: '#/trigger/payload'
+                      - variable: SalesforceCreatelead
+                        $ref: '#/node-output/Salesforce Create lead/response/payload'
+                    mappings:
+                      - lead:
+                          template: lead
+                  input:
+                    - variable: Request
+                      $ref: '#/trigger/payload'
+                    - variable: SalesforceCreatelead
+                      $ref: '#/node-output/Salesforce Create lead/response/payload'
+  name: Create Salesforce Lead
+models:
+  newSalesForceLead:
+    name: newSalesForceLead
+    properties:
+      lead:
+        required: false
+        id: true
+        type: string
+    plural: newSalesForceLead
+    description: ' '
+    operations:
+      create: '#/integration/assemblies/assembly-1'
